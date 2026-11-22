@@ -1,6 +1,6 @@
 // frida-auto-trial.js — Google AI Ultra trial: discover + activate
-// 博客：https://blog.caowo.de/
-// 发卡网：https://faka.cdkey.si/
+// บล็อก: https://blog.caowo.de/
+// เว็บไซต์จำหน่ายบัตร/คีย์: https://faka.cdkey.si/
 //
 // Usage:
 //   frida -H 127.0.0.1:<PORT> -p <PID> -l frida-auto-trial.js

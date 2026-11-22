@@ -1,123 +1,123 @@
 # Google AI Trial Tool
 
-内容为转载，来自q群797481450
-这次的会封号 ，涉及工具调用，慎用
+เนื้อหานี้เป็นการคัดลอกต่อมาจากกลุ่ม QQ: 797481450
+ครั้งนี้อาจเสี่ยงถูกแบนบัญชีได้ เนื่องจากมีการเรียกใช้งานผ่านเครื่องมือ โปรดใช้อย่างระมัดระวัง
 
 
-通过 Frida 注入 Google One 进程调用 BillingClient API，发现并激活隐藏的 $0 免费试用。
+ค้นหาและเปิดใช้งานสิทธิ์ทดลองใช้ฟรี $0 ที่ซ่อนอยู่ โดยใช้ Frida ฉีดโค้ด (inject) เข้าไปในโปรเซสของ Google One เพื่อเรียกใช้ BillingClient API
 
-## 前提条件
+## ข้อกำหนดเบื้องต้น
 
-| 组件 | 说明 |
+| องค์ประกอบ | คำอธิบาย |
 |---|---|
-| **MuMu 模拟器** | 已启动，已登录 Google 账号，已绑定付款方式 |
-| **adb** | 在 PATH 中，或设置 `ADB_PATH` 环境变量 |
-| **frida** (host) | `pip install frida-tools`，版本 ≥ 16 |
-| **frida-server** (device) | 推送到设备 `/data/local/tmp/frida-server` 并赋予执行权限 |
-| **module.apk** (device) | 包含 BillingClient 库的 APK，推送到 `/data/local/tmp/module.apk` |
-| **Google One** | 设备上已安装 (`com.google.android.apps.subscriptions.red`) |
+| **MuMu Emulator** | เปิดใช้งานแล้ว, ล็อกอินบัญชี Google แล้ว และผูกวิธีการชำระเงินเรียบร้อยแล้ว |
+| **adb** | อยู่ใน PATH หรือกำหนดค่าตัวแปรสภาพแวดล้อม `ADB_PATH` |
+| **frida** (เครื่องโฮสต์) | `pip install frida-tools` เวอร์ชัน ≥ 16 |
+| **frida-server** (บนอุปกรณ์) | ส่งไฟล์ไปยังอุปกรณ์ที่ `/data/local/tmp/frida-server` และกำหนดสิทธิ์ในการรัน (execute) |
+| **module.apk** (บนอุปกรณ์) | ไฟล์ APK ที่มีไลบรารี BillingClient โดยส่งไปยัง `/data/local/tmp/module.apk` |
+| **Google One** | ติดตั้งบนอุปกรณ์แล้ว (`com.google.android.apps.subscriptions.red`) |
 
-## 设备准备
+## การเตรียมอุปกรณ์
 
 ```bash
-# 连接 MuMu
+# เชื่อมต่อ MuMu
 adb connect 127.0.0.1:16384
 
-# 推送 frida-server（从 https://github.com/frida/frida/releases 下载对应架构）
+# ส่งไฟล์ frida-server (ดาวน์โหลดเวอร์ชันที่ตรงกับสถาปัตยกรรม CPU จาก https://github.com/frida/frida/releases)
 adb push frida-server /data/local/tmp/frida-server
 adb shell "chmod 755 /data/local/tmp/frida-server"
 
-# 推送 module.apk（包含 com.android.billingclient 的 APK）
+# ส่งไฟล์ module.apk (ไฟล์ APK ที่มี com.android.billingclient)
 adb push module.apk /data/local/tmp/module.apk
 ```
 
-## 用法
+## วิธีใช้งาน
 
 ```bash
-# 列出当前账号所有可用试用
+# แสดงรายการทดลองใช้ทั้งหมดที่มีในบัญชีปัจจุบัน
 ./auto-trial.sh --list
 
-# 激活 Pro (5TB, $19.99/mo) 3个月免费试用
+# เปิดใช้งานทดลองใช้ฟรี Pro (5TB, $19.99/เดือน) นาน 3 เดือน
 ./auto-trial.sh --product pro --dur 3mo
 
-# 激活 Pro variant (5TB, $19.99/mo) 12个月免费试用 ★推荐
+# เปิดใช้งานทดลองใช้ฟรี Pro variant (5TB, $19.99/เดือน) นาน 12 เดือน ★แนะนำ
 ./auto-trial.sh --product pro12 --dur 12mo
 
-# 激活 Ultra 20x (30TB, $199.99/mo) 12个月免费试用
+# เปิดใช้งานทดลองใช้ฟรี Ultra 20x (30TB, $199.99/เดือน) นาน 12 เดือน
 ./auto-trial.sh --product 20x --dur 12mo
 
-# 激活 Ultra 5x (20TB, $99.99/mo) 6个月免费试用
+# เปิดใช้งานทดลองใช้ฟรี Ultra 5x (20TB, $99.99/เดือน) นาน 6 เดือน
 ./auto-trial.sh --product 5x --dur 6mo
 
-# 自动选最长试用（默认最高档）
+# เลือกสิทธิ์ทดลองใช้ที่นานที่สุดโดยอัตโนมัติ (ค่าเริ่มต้นเป็นแพ็กเกจสูงสุด)
 ./auto-trial.sh
 
-# 指定 MuMu ADB 端口
+# ระบุพอร์ต ADB ของ MuMu
 ./auto-trial.sh --port 16416 --product pro --dur 3mo
 ```
 
-### 参数
+### พารามิเตอร์
 
-| 参数 | 说明 | 默认值 |
+| พารามิเตอร์ | คำอธิบาย | ค่าเริ่มต้น |
 |---|---|---|
-| `--list` | 只列出试用，不激活 | (激活模式) |
-| `--product` | `pro` / `pro12` / `5x` / `20x` / `auto` / `g1.*` 完整 ID | `auto` |
+| `--list` | แสดงรายการทดลองใช้เท่านั้น ไม่เปิดใช้งาน | (โหมดเปิดใช้งาน) |
+| `--product` | `pro` / `pro12` / `5x` / `20x` / `auto` / ID เต็มรูปแบบ `g1.*` | `auto` |
 | `--dur` | `1mo` / `3mo` / `6mo` / `12mo` / `longest` | `longest` |
-| `--port` | MuMu ADB 端口 | 自动扫描 |
-| `--adb` | adb 路径 | 自动检测 |
+| `--port` | พอร์ต ADB ของ MuMu | สแกนอัตโนมัติ |
+| `--adb` | พาธของ adb | ตรวจจับอัตโนมัติ |
 
-### 环境变量
+### ตัวแปรสภาพแวดล้อม (Environment Variables)
 
-| 变量 | 说明 |
+| ตัวแปร | คำอธิบาย |
 |---|---|
-| `ADB_PATH` | adb 可执行文件路径 |
-| `FRIDA_SCRIPT` | frida-auto-trial.js 路径（默认同目录） |
-| `FRIDA_SERVER_PATH` | 设备上 frida-server 路径（默认 `/data/local/tmp/frida-server`） |
-| `MODULE_APK_DEVICE` | 设备上 module.apk 路径（默认 `/data/local/tmp/module.apk`） |
+| `ADB_PATH` | พาธไปยังไฟล์โปรแกรม adb |
+| `FRIDA_SCRIPT` | พาธของไฟล์ frida-auto-trial.js (ค่าเริ่มต้นอยู่ในโฟลเดอร์เดียวกัน) |
+| `FRIDA_SERVER_PATH` | พาธของ frida-server บนอุปกรณ์ (ค่าเริ่มต้น `/data/local/tmp/frida-server`) |
+| `MODULE_APK_DEVICE` | พาธของ module.apk บนอุปกรณ์ (ค่าเริ่มต้น `/data/local/tmp/module.apk`) |
 
-## 产品 ID 对照
+## ตารางเปรียบเทียบรหัสผลิตภัณฑ์ (Product ID)
 
-| 别名 | 产品 ID | 容量 | 月费 | 试用 |
+| ชื่อย่อ | รหัสผลิตภัณฑ์ (Product ID) | ความจุ | ค่าบริการรายเดือน | ทดลองใช้ |
 |---|---|---|---|---|
-| **pro12** ★ | `g1.2tb.ai.subs_variant` | 5TB | $19.99 | 6/12 月 |
-| **pro** | `g1.play.2tb.ai` | 5TB | $19.99 | 3 月 |
-| **5x** | `g1.play.20tb` | 20TB | $99.99 | 1/3/6/12 月 |
-| **20x** | `g1.play.ai.pro` | 30TB | $199.99 | 1/3/6/12 月 |
-| — | `g1.2tb.ai` | 5TB | $19.99 | 无 |
-| — | `g1.ai.pro` | 30TB | $199.99 | 无 |
-| — | `g1.30tb` | 30TB | $149.99 | 无 |
+| **pro12** ★ | `g1.2tb.ai.subs_variant` | 5TB | $19.99 | 6/12 เดือน |
+| **pro** | `g1.play.2tb.ai` | 5TB | $19.99 | 3 เดือน |
+| **5x** | `g1.play.20tb` | 20TB | $99.99 | 1/3/6/12 เดือน |
+| **20x** | `g1.play.ai.pro` | 30TB | $199.99 | 1/3/6/12 เดือน |
+| — | `g1.2tb.ai` | 5TB | $19.99 | ไม่มี |
+| — | `g1.ai.pro` | 30TB | $199.99 | ไม่มี |
+| — | `g1.30tb` | 30TB | $149.99 | ไม่มี |
 
-App 界面"升级"按钮走的是不带试用的 ID（`g1.2tb.ai` 等）。
+ปุ่ม "อัปเกรด" บนหน้าจอแอปจะเรียกใช้รหัสผลิตภัณฑ์ที่ไม่มีสิทธิ์ทดลองใช้ (เช่น `g1.2tb.ai` เป็นต้น)
 
-> **注意**：截至 2026-11-19，Ultra 5x/20x 的试用已封车（offer 被移除）。Pro 有两个产品 ID：
-> - `g1.2tb.ai.subs_variant`（别名 `pro12`）：最长 **12 个月**免费，推荐优先使用
-> - `g1.play.2tb.ai`（别名 `pro`）：3 个月免费
+> **หมายเหตุ**: ณ วันที่ 2026-11-19 สิทธิ์ทดลองใช้ของ Ultra 5x/20x ถูกปิดแล้ว (offer ถูกลบออก) ส่วน Pro มีรหัสผลิตภัณฑ์อยู่ 2 ตัว:
+> - `g1.2tb.ai.subs_variant` (ชื่อย่อ `pro12`): ฟรีสูงสุด **12 เดือน** แนะนำให้ใช้ตัวนี้เป็นอันดับแรก
+> - `g1.play.2tb.ai` (ชื่อย่อ `pro`): ฟรี 3 เดือน
 >
-> 注意：Frida ≥ 17 有破坏性变更（Java 桥在 17 里要显式加载），建议使用 Frida **16.7.19**。
+> หมายเหตุ: Frida ≥ 17 มีการเปลี่ยนแปลงที่เข้ากันไม่ได้กับเวอร์ชันเก่า (Breaking Changes โดยต้องโหลด Java bridge แบบชัดเจนในเวอร์ชัน 17) แนะนำให้ใช้ Frida **16.7.19**
 
-## 纯网页方法——不可行
+## วิธีทำผ่านหน้าเว็บอย่างเดียว — ไม่สามารถทำได้
 
-经测试，以下网页端方案均无法绕过 Google Play 的服务端校验：
+จากการทดสอบ พบว่าวิธีผ่านฝั่งเว็บต่อไปนี้ไม่สามารถข้ามการตรวจสอบฝั่งเซิร์ฟเวอร์ (server-side validation) ของ Google Play ได้:
 
-1. **静态 URL**：`rpctoken`、`_gfid` 和 payments blob 是会话绑定的，过期即失效
-2. **Console 脚本改 ear 参数**：页面生成的 ear（25 位）在 `ear[13]` 放产品、`ear[24]` 放完整性签名。签名绑定了原产品，换产品后无论保留还是清除签名，服务端都返回 400
-3. **Chrome 扩展 RPC Hook**：社区方案在 `Ngbm` RPC payload 层面拦截，但相关仓库已 404
+1. **Static URL**: `rpctoken`, `_gfid` และ payments blob ผูกติดกับเซสชัน เมื่อหมดอายุจะใช้งานไม่ได้ทันที
+2. **สคริปต์ Console เพื่อแก้พารามิเตอร์ ear**: ค่า ear ที่หน้าเว็บสร้างขึ้น (25 หลัก) จะเก็บผลิตภัณฑ์ไว้ที่ `ear[13]` และเก็บลายเซ็นความถูกต้อง (integrity signature) ไว้ที่ `ear[24]` เนื่องจากลายเซ็นผูกกับผลิตภัณฑ์เดิม เมื่อเปลี่ยนผลิตภัณฑ์ไม่ว่าจะเก็บหรือลบลายเซ็นออก เซิร์ฟเวอร์จะส่งคืนรหัส 400 ทั้งหมด
+3. **ส่วนขยาย Chrome แบบ RPC Hook**: วิธีจากคอมมูนิตี้เป็นการดักจับในระดับ `Ngbm` RPC payload แต่รีโปซิทอรีที่เกี่ยวข้องขึ้น 404 ไปแล้ว
 
-> **结论**：隐藏试用（`g1.play.2tb.ai`）不在任何页面上展示，网页端无法生成对应的合法 checkout session。唯一可靠方法是通过 Frida 注入 BillingClient API 在设备端发起。
+> **สรุป**: สิทธิ์ทดลองใช้ที่ซ่อนอยู่ (`g1.play.2tb.ai`) ไม่ได้แสดงบนหน้าเว็บใดๆ ฝั่งเว็บจึงไม่สามารถสร้าง checkout session ที่ถูกต้องได้ วิธีเดียวที่เชื่อถือได้คือการใช้ Frida ฉีดโค้ดเรียก BillingClient API จากฝั่งอุปกรณ์โดยตรง
 
-## 注意事项
+## ข้อควรระวัง
 
-- 脚本只拉起 Google Play 支付弹窗，需要手动确认（输入密码）
-- 试用到期后自动续费，记得提前取消
-- 账号必须已绑付款方式且无现有订阅，否则试用不可用
-- `launchBillingFlow` 返回 code=0 可能消耗试用资格，即使弹窗未显示
-- 全程在模拟器中操作，建议绑定小额余额卡作为安全网
+- สคริปต์จะเปิดเฉพาะหน้าต่างชำระเงินของ Google Play ขึ้นมาเท่านั้น ผู้ใช้ต้องกดยืนยันด้วยตนเอง (กรอกรหัสผ่าน)
+- เมื่อหมดช่วงทดลองใช้ระบบจะต่ออายุอัตโนมัติ อย่าลืมยกเลิกล่วงหน้า
+- บัญชีต้องผูกวิธีการชำระเงินไว้แล้วและต้องไม่มีการสมัครสมาชิกที่ใช้งานอยู่ในปัจจุบัน มิฉะนั้นจะไม่สามารถใช้สิทธิ์ทดลองใช้ได้
+- หาก `launchBillingFlow` ส่งค่ากลับเป็น code=0 อาจทำให้เสียสิทธิ์ทดลองใช้ไปแล้ว แม้ว่าหน้าต่างป๊อปอัปจะไม่แสดงขึ้นมาก็ตาม
+- ดำเนินการทั้งหมดในโปรแกรมจำลอง (Emulator) แนะนำให้ผูกบัตรที่มีวงเงิน/ยอดเงินน้อยไว้เพื่อความปลอดภัย
 
-## 文件说明
+## คำอธิบายไฟล์
 
-- `auto-trial.sh` — Shell 启动器，自动检测设备、管理 frida-server、注入脚本、监控结果
-- `frida-auto-trial.js` — Frida 注入脚本，通过 DexClassLoader 加载 BillingClient 查询和激活试用
+- `auto-trial.sh` — สคริปต์ Shell สำหรับเริ่มต้นทำงาน ตรวจจับอุปกรณ์อัตโนมัติ จัดการ frida-server ฉีดสคริปต์ และติดตามผลลัพธ์
+- `frida-auto-trial.js` — สคริปต์ Frida สำหรับฉีดโค้ด โดยโหลด BillingClient ผ่าน DexClassLoader เพื่อค้นหาและเปิดใช้งานสิทธิ์ทดลองใช้
 
 
 
-羊毛交流群 t.me/muihbb
+กลุ่มพูดคุยแลกเปลี่ยนข้อมูล t.me/muihbb
