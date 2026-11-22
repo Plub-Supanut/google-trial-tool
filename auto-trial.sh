@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # auto-trial.sh — One-command Google AI Ultra trial activation
 # บล็อก: https://blog.caowo.de/
-# เว็บไซต์จำหน่ายบัตร/คีย์: https://faka.cdkey.si/
+# ร้านจำหน่ายคีย์/บัตร: https://faka.cdkey.si/
 #
 # Usage:
 #   ./auto-trial.sh --list                        # show all available trials
@@ -291,7 +291,7 @@ trap cleanup EXIT
 main() {
     echo "=== Google AI Ultra Trial Tool ==="
     echo "บล็อก: https://blog.caowo.de/"
-    echo "เว็บไซต์จำหน่ายบัตร/คีย์: https://faka.cdkey.si/"
+    echo "ร้านจำหน่ายคีย์/บัตร: https://faka.cdkey.si/"
     echo ""
 
     detect_device
